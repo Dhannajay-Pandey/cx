@@ -1,6 +1,9 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 7d446605f14372f33441671404476fcc8a3b5563
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
@@ -37,6 +40,7 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+<<<<<<< HEAD
 =======
 # ecommerce
 ecommerce plateform
@@ -49,3 +53,5 @@ myeco
 # Nodejs
 Learning node js
 >>>>>>> f05f6e8e2c7b92f0ef1b653ee6af7d1923670b67
+=======
+>>>>>>> 7d446605f14372f33441671404476fcc8a3b5563
