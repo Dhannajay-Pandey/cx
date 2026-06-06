@@ -1,5 +1,6 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
@@ -44,3 +45,7 @@ ecommerce plateform
 # myeco
 myeco
 >>>>>>> c5f3e38b116ed2fbfdd31891420bd035becbbd06
+=======
+# Nodejs
+Learning node js
+>>>>>>> f05f6e8e2c7b92f0ef1b653ee6af7d1923670b67
