@@ -10,6 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 
 import ButtonLoading from "@/components/application/buttonLoading";
+import { showToast } from "@/lib/showToast";
 
 const formSchema = z
   .object({
@@ -60,7 +61,8 @@ export default function RegisterPage() {
         }
       );
 
-      console.log("Registration Success:", response.data);
+      //console.log("Registration Success:", response.data);
+      showToast("success", response.data?.message || "Registration successful.");
 
       router.push("/auth/login");
     } catch (err: unknown) {
@@ -74,7 +76,8 @@ export default function RegisterPage() {
       }
 
       setError(message);
-      console.error("Registration Error:", err);
+      showToast("error", message);
+      //console.error("Registration Error:", err);
     } finally {
       setLoading(false);
     }

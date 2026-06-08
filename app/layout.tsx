@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
 
 const inter = Inter({ 
@@ -23,7 +25,11 @@ export default function RootLayout({
       lang="en"
       className={`h-full antialiased ${inter.className}`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+         <ToastContainer />
+        {children}
+       
+      </body>
     </html>
   );
 }

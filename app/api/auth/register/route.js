@@ -49,7 +49,7 @@ export async function POST(request) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const verificationToken = crypto.randomUUID();
-    const verificationUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/auth/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
+    const verificationUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/auth/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
 
     const newUser = await UserModel.create({
       name,
@@ -68,7 +68,11 @@ export async function POST(request) {
       );
     } catch (mailError) {
       console.error("Verification email failed:", mailError);
-      return jsonResponse(503, "User created, but verification email could not be sent. Please try again later.");
+      return jsonResponse(201, "User registered successfully, but verification email could not be sent. Please try again later.", {
+        id: newUser._id,
+        email: newUser.email,
+        verificationEmailSent: false,
+      });
     }
 
     return jsonResponse(201, "User registered successfully. Please check your email to verify your account.", {

@@ -1,9 +1,31 @@
 import { connectDB } from "@/lib/databaseConnection";
 import UserModel from "@/models/User.model";
+import OtpModel from "@/models/Otp.model";
 import bcrypt from "bcrypt";
+import z from "zod";
+import crypto from "crypto";
+import { otpEmail } from "@/email/otpEmail";
+import { sendEmail } from "@/lib/sentMail";
+
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6).max(100),
+});
 
 function jsonResponse(status, message, data = null) {
-  return Response.json({ ok: status < 400, message, data }, { status });
+  return Response.json(
+    {
+      ok: status < 400,
+      message,
+      data,
+    },
+    { status }
+  );
+}
+
+function generateOtp() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
 export async function POST(request) {
@@ -11,11 +33,18 @@ export async function POST(request) {
     await connectDB();
 
     const payload = await request.json();
-    const { email, password } = payload || {};
 
-    if (!email || !password) {
-      return jsonResponse(400, "Email and password are required");
+    const parsed = loginSchema.safeParse(payload);
+
+    if (!parsed.success) {
+      return jsonResponse(
+        400,
+        "Invalid input data",
+        parsed.error.flatten()
+      );
     }
+
+    const { email, password } = parsed.data;
 
     const user = await UserModel.findOne({ email }).select("+password");
 
@@ -23,24 +52,77 @@ export async function POST(request) {
       return jsonResponse(401, "Invalid email or password");
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    // Email Verification Check
+    if (!user.isEmailVerified) {
+      const token = crypto.randomUUID();
+
+      user.emailVerificationToken = token;
+      await user.save();
+
+      const verifyUrl =
+        `${process.env.NEXT_PUBLIC_APP_URL}/auth/verify-email?token=${token}&email=${encodeURIComponent(
+          user.email
+        )}`;
+
+      await sendEmail(
+        user.email,
+        "Verify Your Email",
+        `<h2>Email Verification</h2>
+         <p>Hello ${user.name},</p>
+         <p>Please click the link below to verify your email:</p>
+         <a href="${verifyUrl}">Verify Email</a>
+         <br><br>
+         <p>If the button doesn't work, copy this URL:</p>
+         <p>${verifyUrl}</p>`
+      );
+
+      return jsonResponse(
+        403,
+        "Email not verified. A verification email has been sent."
+      );
+    }
+
+    // Password Check
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      user.password
+    );
 
     if (!isPasswordValid) {
       return jsonResponse(401, "Invalid email or password");
     }
 
-    return jsonResponse(200, "Login successful", {
-      id: user._id,
-      name: user.name,
+    // Delete Old OTPs
+    await OtpModel.deleteMany({
       email: user.email,
-      role: user.role,
-      isEmailVerified: user.isEmailVerified,
+    });
+
+    // Generate OTP
+    const otp = generateOtp();
+
+    // Save OTP
+    await OtpModel.create({
+      email: user.email,
+      otp,
+    });
+
+    // Send OTP Email
+    await sendEmail(user.email, "Your Login OTP", otpEmail(otp));
+
+    // Success Response
+    return jsonResponse(200, "OTP sent successfully", {
+      email: user.email,
+      name: user.name,
+      requiresOtpVerification: true,
     });
   } catch (error) {
     console.error("Login Error:", error);
+
     return jsonResponse(
       500,
-      error instanceof Error ? error.message : "Internal Server Error"
+      error instanceof Error
+        ? error.message
+        : "Internal Server Error"
     );
   }
 }
