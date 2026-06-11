@@ -5,17 +5,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { email, z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
-
 import ButtonLoading from "@/components/application/buttonLoading";
 import { showToast } from "@/lib/showToast";
 
 const formSchema = z
   .object({
-    name: z.string().min(1, "Full name required"),
-    email: z.string().email("Invalid email"),
+    email:true,
     password: z.string().min(6, "Minimum 6 characters"),
     confirmPassword: z.string(),
   })
@@ -26,14 +24,13 @@ const formSchema = z
 
 type FormData = z.infer<typeof formSchema>;
 
-export default function RegisterPage() {
+export default function UpdatePassword() {
   const router = useRouter();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      email: "",
+     email:email,
       password: "",
       confirmPassword: "",
     },
@@ -42,13 +39,13 @@ export default function RegisterPage() {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState("");
 
-  const handleSubmitRegister = async (data: FormData) => {
+  const handleUpdatePassword = async (data: FormData) => {
     setLoading(true);
     setError("");
 
     try {
       const response = await axios.post(
-        "/api/auth/register",
+        "/api/auth/forget-password/update-password",
         {
           name: data.name,
           email: data.email,
@@ -60,13 +57,13 @@ export default function RegisterPage() {
           },
         }
       );
-
+      form.reset()
       //console.log("Registration Success:", response.data);
-      showToast("success", response.data?.message || "Registration successful.");
+      showToast("success", response.data?.message || "Password Update successful.");
 
-      router.push("/auth/login");
+      router.push(WEBSITE_LOGIN);
     } catch (err: unknown) {
-      let message = "Registration failed";
+      let message = "Password Update failed";
 
       if (axios.isAxiosError(err)) {
         message =
@@ -100,50 +97,20 @@ export default function RegisterPage() {
 
         {/* Heading */}
         <h1 className="text-2xl font-bold text-center mb-2">
-          Create Account
+         Update Password
         </h1>
 
         <p className="text-center text-sm mb-4">
           <span className="text-black-600 px-2 py-1 rounded">
-            Create new account by filling out the form below.
+            Create new Update Password by filling out the form below.
           </span>
         </p>
 
         <form
-          onSubmit={form.handleSubmit(handleSubmitRegister)}
+          onSubmit={form.handleSubmit(handleUpdatePassword)}
           className="space-y-3"
         >
-          {/* Full Name */}
-          <div>
-            <label className="text-sm">Full Name</label>
-            <input
-              {...form.register("name")}
-              placeholder="Enter your name"
-              className="w-full border rounded px-3 py-2 mt-1"
-            />
-            {form.formState.errors.name && (
-              <p className="text-red-500 text-xs mt-1">
-                {form.formState.errors.name.message}
-              </p>
-            )}
-          </div>
-
-          {/* Email */}
-          <div>
-            <label className="text-sm">Email</label>
-            <input
-              type="email"
-              {...form.register("email")}
-              placeholder="example@gmail.com"
-              className="w-full border rounded px-3 py-2 mt-1"
-            />
-            {form.formState.errors.email && (
-              <p className="text-red-500 text-xs mt-1">
-                {form.formState.errors.email.message}
-              </p>
-            )}
-          </div>
-
+        
           {/* Password */}
           <div>
             <label className="text-sm">Password</label>
@@ -187,20 +154,9 @@ export default function RegisterPage() {
           <ButtonLoading
             type="submit"
             loading={loading}
-            text="Create Account"
+            text="Update Password"
             className="cursor-pointer"
           />
-
-          {/* Login Link */}
-          <p className="text-center text-sm mt-2">
-            Already have an account?{" "}
-            <Link
-              href="/auth/login"
-              className="text-secondary underline"
-            >
-              Login
-            </Link>
-          </p>
         </form>
       </div>
     </div>

@@ -10,12 +10,15 @@ import ButtonLoading from "@/components/application/buttonLoading";
 import { showToast } from "@/lib/showToast";
 import { Eye, EyeOff } from "lucide-react";
 import OtpVarification from "@/components/application/otpvarification";
+import { useDispatch } from "react-redux";
+import { login } from "@/store/reducer/authReducer";
 import {
   Card,
   CardContent,
   CardHeader,
 } from "@/components/ui/card";
-import Link from "next/dist/client/link";
+import Link from "next/link";
+import { useEffect } from "react";
 
 export const ROUTES = {
   REGISTER: "/auth/register",
@@ -35,6 +38,21 @@ export const formSchema = z.object({
 });
 
 const LoginPage = () => {
+  const dispatch = useDispatch();
+
+  // Auto-redirect if already logged in via JWT session
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.ok && result.data) {
+          dispatch(login(result.data));
+          window.location.href = "/";
+        }
+      })
+      .catch(() => {}); // ignore — user is not logged in
+  }, [dispatch]);
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -68,7 +86,8 @@ const LoginPage = () => {
       }
 
       showToast("success", result?.message || "OTP verified successfully.");
-      window.location.href = "/dashboard";
+      dispatch(login(result?.data?.user || { email: otpmail }));
+      window.location.href = "/";
     } catch (err) {
       const message = err instanceof Error ? err.message : "OTP verification failed";
       showToast("error", message);
@@ -79,7 +98,7 @@ const LoginPage = () => {
   };
 
   const handleLoginSubmit = async (data: { email: string; password: string }) => {
-   
+
     setLoading(true);
     setError("");
 
@@ -194,13 +213,13 @@ const LoginPage = () => {
             <div className="text-center">
             <div className="flex justify-center items-center gap-1">
               <p>Don&apos;t have account?</p>
-              <Link href={WEBSITE_REGISTER} className="text-primary underline">
+              <Link href={WEBSITE_REGISTER} className="text-secondary underline">
                 Create account!
               </Link>
             </div>
             <div className="flex justify-center items-center gap-1 mt-2">
               <p>Forgot password?</p>
-              <Link href={WEBSITE_FORGOT_PASSWORD} className="text-primary underline ">
+              <Link href={WEBSITE_FORGOT_PASSWORD} className="text-secondary underline ">
                 Reset here!
               </Link>
             </div>
@@ -210,7 +229,28 @@ const LoginPage = () => {
               </>
             ) : (
               <>
+              <div className="w-[380px] max-w-sm">
+               <CardHeader>
+          <div className="flex justify-center mb-4">
+            <Image
+              src="/assets/images/logo-black1.png"
+              alt="E-commerce Logo"
+              width={200}
+              height={100}
+              priority
+              style={{ height: "auto" }}
+            />
+          </div>
+           
+          <div className="text-center">
+            <h1 className="text-3xl font-bold mb-2">
+              Please Complate otp Verification
+            </h1>
+            <p>We have sent an OTP to your email. Please enter it to verify your account.</p>
+          </div>
+              </CardHeader>
               <OtpVarification email={otpmail} onSubmit={heandotpVarification} loading={loading} />
+              </div>
               </>
             ) 
             }

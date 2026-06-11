@@ -5,14 +5,22 @@ import { z } from "zod";
 import ButtonLoading from "@/components/application/buttonLoading";
 import { CardContent } from "@/components/ui/card";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+
 const otpSchema = z.object({
   otp: z.string().length(6, "OTP must be 6 digits").regex(/^\d+$/, "OTP must contain only numbers"),
   email: z.string().email("Invalid email"),
 });
 
+interface OtpVarificationProps {
+  email?: string;
+  onSubmit: (data: { otp: string; email: string }) => Promise<void>;
+  onResend?: (email: string) => void;
+  loading?: boolean;
+}
+
 const RESEND_COOLDOWN = 30;
 
-const OtpVarification = ({ email = "", onSubmit, onResend = undefined, loading = false }) => {
+const OtpVarification = ({ email = "", onSubmit, onResend, loading = false }: OtpVarificationProps) => {
   const [secondsLeft, setSecondsLeft] = useState(RESEND_COOLDOWN);
   const [canResend, setCanResend] = useState(false);
   const [resending, setResending] = useState(false);
@@ -34,7 +42,7 @@ const OtpVarification = ({ email = "", onSubmit, onResend = undefined, loading =
     return () => clearTimeout(id);
   }, [secondsLeft]);
 
-  const handleOtpSubmit = async (data) => {
+  const handleOtpSubmit = async (data: { otp: string; email: string }) => {
     if (typeof onSubmit === "function") {
       await onSubmit({ ...data, email: email || data.email });
     }
@@ -81,7 +89,7 @@ const OtpVarification = ({ email = "", onSubmit, onResend = undefined, loading =
           )}
         </div>
 
-        {/* ── Resend row (hidden when onResend not provided) ── */}
+        {/* Resend row — hidden when onResend not provided */}
         {typeof onResend === "function" && (
         <div className="text-center text-sm text-gray-500">
           {canResend ? (

@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Playfair_Display, Raleway } from "next/font/google";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
-
-const inter = Inter({ 
-  weight: ["400", "500", "700", "800", "900"],
+import GlobalProvider from "@/components/application/GlobalProvider";
+const playfair = Playfair_Display({
   subsets: ["latin"],
-  display: "swap",
+  variable: "--font-playfair",
+});
+
+const raleway = Raleway({
+  subsets: ["latin"],
+  variable: "--font-raleway",
 });
 
 export const metadata: Metadata = {
@@ -23,11 +27,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`h-full antialiased ${inter.className}`}
+      className={`${playfair.variable} ${raleway.variable}`}
     >
       <body className="min-h-full flex flex-col">
-         <ToastContainer />
-        {children}
+       <GlobalProvider>
+          {children}
+          <ToastContainer />
+          </GlobalProvider>
        
       </body>
     </html>
